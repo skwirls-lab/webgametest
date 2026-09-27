@@ -1,0 +1,26 @@
+{
+  "name": "aurelian-world-tree",
+  "version": "1.0.0",
+  "description": "Procedural Three.js scene: a golden bioluminescent world tree in a mountain valley, with a time-of-day control.",
+  "scripts": {
+    "start": "node scripts/serve.mjs 8080",
+    "shoot": "node scripts/shoot.mjs",
+    "build:artifact": "node scripts/build-artifact.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skwirls-lab/webgametest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skwirls-lab/webgametest/issues"
+  },
+  "homepage": "https://github.com/skwirls-lab/webgametest#readme",
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "playwright-core": "^1.56.0"
+  }
+}

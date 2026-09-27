@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aurelian World Tree</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: rgba(7, 13, 16, 0.58);
+    --ink-strong: rgba(7, 13, 16, 0.78);
+    --line: rgba(190, 220, 230, 0.16);
+    --text: #eaf1ec;
+    --muted: #9eb1aa;
+    --gold: #d8b263;
+    --vein: #6fd3ff;
+    --display: 'Marcellus', 'Cormorant Garamond', Georgia, serif;
+    --ui: 'IBM Plex Sans Condensed', 'Arial Narrow', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+  html, body { height: 100%; margin: 0; background: #05090b; color: var(--text); overflow: hidden; }
+  body { font-family: var(--ui); font-size: 14px; -webkit-font-smoothing: antialiased; }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .title {
+    position: fixed; left: max(20px, env(safe-area-inset-left)); top: calc(env(safe-area-inset-top, 0px) + 18px);
+    pointer-events: none; text-shadow: 0 1px 12px rgba(0,0,0,0.45);
+    transition: opacity .4s ease;
+  }
+  .title h1 { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 3vw, 34px); letter-spacing: 0.04em; margin: 0; text-wrap: balance; }
+  .title p { margin: 4px 0 0; color: var(--muted); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+  .title p b { color: var(--gold); font-weight: 500; }
+
+  #panel {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+    width: min(820px, calc(100% - 32px));
+    box-sizing: border-box;
+    background: var(--ink); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px 12px;
+    display: grid; gap: 10px;
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .clock { display: flex; align-items: baseline; gap: 10px; min-width: 150px; }
+  #time-readout { font-family: var(--mono); font-size: 26px; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+  #time-phase { color: var(--gold); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; margin: 0; }
+  input[type=range]:focus-visible { outline: 2px solid var(--vein); outline-offset: 4px; border-radius: 6px; }
+  .track { flex: 1 1 260px; display: grid; gap: 2px; }
+  #time { width: 100%; height: 26px; }
+  #time::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(90deg, #0b1630 0%, #1d2d5a 20%, #e58a4f 26%, #9cc8f0 38%, #bfe0ff 50%, #9cc8f0 64%, #f2a75a 74%, #b8526a 79%, #1d2d5a 85%, #0b1630 100%);
+  }
+  #time::-moz-range-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(90deg, #0b1630 0%, #1d2d5a 20%, #e58a4f 26%, #9cc8f0 38%, #bfe0ff 50%, #9cc8f0 64%, #f2a75a 74%, #b8526a 79%, #1d2d5a 85%, #0b1630 100%);
+  }
+  #time::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: #fff7e2; border: 2px solid rgba(0,0,0,0.35); box-shadow: 0 0 12px rgba(255,230,170,0.7); cursor: grab; }
+  #time::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff7e2; border: 2px solid rgba(0,0,0,0.35); box-shadow: 0 0 12px rgba(255,230,170,0.7); cursor: grab; }
+
+  .ticks { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 0 2px; }
+  .presets { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip, .toggle, .icon-btn {
+    font: 500 12px/1 var(--ui); letter-spacing: 0.06em; color: var(--text);
+    background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 11px; cursor: pointer; user-select: none;
+  }
+  .chip:hover, .toggle:hover, .icon-btn:hover { background: rgba(255,255,255,0.12); }
+  .chip:focus-visible, .icon-btn:focus-visible, .toggle:focus-within { outline: 2px solid var(--vein); outline-offset: 2px; }
+  .toggle { display: inline-flex; align-items: center; gap: 7px; }
+  .toggle input { accent-color: var(--vein); margin: 0; }
+  .spacer { flex: 1; }
+  .glow { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; letter-spacing: 0.06em; }
+  #glow { width: 110px; height: 20px; }
+  #glow::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, #12202a, var(--vein)); }
+  #glow::-moz-range-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, #12202a, var(--vein)); }
+  #glow::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5px; border-radius: 50%; background: var(--vein); box-shadow: 0 0 10px var(--vein); }
+  #glow::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--vein); box-shadow: 0 0 10px var(--vein); }
+
+  .hint { color: var(--muted); font-size: 11px; letter-spacing: 0.04em; }
+  .hint-row { gap: 8px; }
+  #quality { padding: 5px 10px; font-size: 11px; }
+  #hide-ui { position: fixed; right: max(16px, env(safe-area-inset-right)); top: calc(env(safe-area-inset-top, 0px) + 16px); background: var(--ink); }
+  body.ui-hidden #panel { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
+  body.ui-hidden .title { opacity: 0; }
+  body.ui-hidden #hide-ui { opacity: 0.35; }
+
+  #loading {
+    position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 60%, #0d1f28 0%, #05090b 70%);
+    transition: opacity 1s ease; z-index: 5;
+  }
+  #loading.done { opacity: 0; pointer-events: none; }
+  #loading .inner { text-align: center; }
+  #loading h2 { font-family: var(--display); font-weight: 400; font-size: 28px; margin: 0 0 10px; letter-spacing: 0.05em; }
+  #loading-step { color: var(--muted); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--vein); margin: 18px auto 0; box-shadow: 0 0 16px var(--vein); animation: beat 1.4s ease-in-out infinite; }
+  @keyframes beat { 50% { transform: scale(2.2); opacity: 0.4; } }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+
+  @media (max-width: 560px) {
+    #panel { padding: 12px; gap: 8px; }
+    .clock { min-width: 0; width: 100%; }
+    .track { flex-basis: 100%; }
+    .hint { display: none; }
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div class="title">
+  <h1>The Aurelian Tree</h1>
+  <p><b>190 m</b> golden oak · Vale of Lorn</p>
+</div>
+
+<button id="hide-ui" class="icon-btn" type="button" title="Hide controls (H)">Hide UI</button>
+
+<div id="panel" role="region" aria-label="Scene controls">
+  <div class="row">
+    <div class="clock"><span id="time-readout">17:24</span><span id="time-phase">Golden hour</span></div>
+    <div class="track">
+      <input id="time" type="range" min="0" max="23.99" step="0.01" value="17.4" aria-label="Time of day">
+      <div class="ticks" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="presets" role="group" aria-label="Time presets">
+      <button class="chip" type="button" data-hours="5.6">Dawn</button>
+      <button class="chip" type="button" data-hours="9.0">Morning</button>
+      <button class="chip" type="button" data-hours="12.5">Noon</button>
+      <button class="chip" type="button" data-hours="17.4">Golden hour</button>
+      <button class="chip" type="button" data-hours="18.3">Dusk</button>
+      <button class="chip" type="button" data-hours="23.0">Night</button>
+    </div>
+    <span class="spacer"></span>
+    <label class="glow" for="glow">Vein glow <input id="glow" type="range" min="0" max="2.5" step="0.01" value="1"></label>
+    <label class="toggle" for="lapse"><input id="lapse" type="checkbox"> Time-lapse</label>
+    <label class="toggle" for="orbit"><input id="orbit" type="checkbox"> Orbit</label>
+  </div>
+  <div class="row hint-row"><span class="hint">Drag to orbit · right-drag to pan · scroll to zoom · H hides the controls</span><span class="spacer"></span><button id="quality" class="chip" type="button">Performance mode</button></div>
+</div>
+
+<div id="loading">
+  <div class="inner">
+    <h2>The Aurelian Tree</h2>
+    <div id="loading-step">Preparing</div>
+    <div class="pulse"></div>
+  </div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
