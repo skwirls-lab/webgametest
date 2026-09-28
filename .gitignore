@@ -2,3 +2,7 @@ node_modules/
 dist/
 *.png
 !docs/*.png
+!hd2d/docs/*.png
+!hd2d/assets/*.png
+!hd2d/assets/preview/*.png
+hd2d/dist/

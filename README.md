@@ -1,3 +1,10 @@
+# Game experiments
+
+Two browser demos, each built entirely from code with no image or model files:
+
+- **[Squirrel Archer (HD-2D)](hd2d/)**: a playable pixel-art village in the HD-2D style, with code-drawn sprite sheets exported as PNGs. See [hd2d/README.md](hd2d/README.md).
+- **The Aurelian Tree** (below): a procedural 3D valley with a bioluminescent world tree.
+
 # The Aurelian Tree
 
 A real-time Three.js scene of a 190 m golden-barked world tree with pulsing blue bioluminescent veins. It stands in a mountain valley beside a lake, and a slider sets the time of day.
